@@ -1,0 +1,26 @@
+# Deviations from PROTOCOL.md
+
+1. Translators replaced before any detector was run (2026-10-03). The protocol named two LLM translators
+   (google/gemini-2.5-flash-lite, mistralai/mistral-small-3.2-24b-instruct). Automatic checks showed that they often
+   answered or executed the prompt instead of translating it: 45% of attack prompts and 35% of benign prompts for the
+   first model, 24% and 17% for the second, failed the length-ratio or script check. Such outputs are not
+   translations, so the evaluation inputs are produced by sequence-to-sequence MT models instead:
+   Helsinki-NLP/opus-mt-en-uk (`uk`), Helsinki-NLP/opus-mt-tc-big-en-zle (`uk_alt`) and Helsinki-NLP/opus-mt-uk-en
+   (`pivot`, applied to `uk`), sentence by sentence with line breaks kept and code-like lines (indented,
+   keyword-led or mostly symbols) left untranslated, beam size 2, output length bounded by twice the input length.
+   NLLB-200 (600M), tried first as the second translator, was too slow on the shared CPU (over two hours).
+   The LLM translations are kept in `data/llm_translation_pilot.jsonl` (`uaguard translate-llm`) and reported as a
+   separate observation.
+
+2. Analyses and code changes after the code was re-checked (2026-10-03); no detector was rerun.
+   - Sensitivity analysis: the primary MT model sometimes produces Russian words, which the length and script checks
+     do not catch (179 of 1,000 main prompts contain letters that exist only in Russian; the second translator: 1).
+     `report` repeats the main comparison on prompts whose two Ukrainian versions contain none of these letters
+     (`clean_uk`, 772 prompts) and the embedded comparison on pairs whose source and target texts are in the
+     intended languages (`embedded_clean`, 134 pairs; one Gandalf payload is Russian and one German).
+   - A random sample of 40 rejected LLM translations (seed 7) was classified by hand
+     (`data/llm_translation_audit.csv`): 30 executed or answered the prompt, 3 translated part of it, 7 were correct
+     translations rejected by the checks.
+   - `scores.jsonl` rows carry a hash of the scored text, and `report` uses only scores whose hash matches the
+     current input; MT cache files are keyed by model revision and beam size; model and dataset revisions are
+     pinned; `translate` always starts from `data/items.jsonl`.

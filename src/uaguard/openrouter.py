@@ -4,17 +4,10 @@ import os
 import time
 import urllib.error
 import urllib.request
-from pathlib import Path
 
 from .config import CACHE
 
 URL = "https://openrouter.ai/api/v1/chat/completions"
-KEY_FILE = Path(os.environ.get("OPENROUTER_KEY_FILE", "~/.config/qos-llm/openrouter.key")).expanduser()
-
-
-def _key() -> str:
-    key = os.environ.get("OPENROUTER_API_KEY")
-    return key if key else KEY_FILE.read_text().strip()
 
 
 def chat(model: str, system: str, user: str, max_tokens: int = 1024) -> dict:
@@ -29,7 +22,7 @@ def chat(model: str, system: str, user: str, max_tokens: int = 1024) -> dict:
     path = CACHE / "openrouter" / f"{digest}.json"
     if path.exists():
         return json.loads(path.read_text())
-    headers = {"Authorization": f"Bearer {_key()}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}", "Content-Type": "application/json"}
     for attempt in range(5):
         try:
             request = urllib.request.Request(URL, json.dumps(body).encode(), headers)

@@ -8,7 +8,7 @@ from transformers import AutoTokenizer
 
 from .config import (
     CARRIER_MAX_TOKENS, DATA, GANDALF, LENGTH_TOKENIZER, MAX_TOKENS, N_ATTACK, N_BENIGN, N_CARRIERS,
-    PROMPTSHIELD, SEED,
+    PROMPTSHIELD, REVISIONS, SEED,
 )
 
 
@@ -29,9 +29,9 @@ def _rows(split, prefix, tokenizer, max_tokens):
 
 
 def build_samples() -> list[dict]:
-    tokenizer = AutoTokenizer.from_pretrained(LENGTH_TOKENIZER)
-    shield = load_dataset(PROMPTSHIELD)
-    gandalf = load_dataset(GANDALF)
+    tokenizer = AutoTokenizer.from_pretrained(LENGTH_TOKENIZER, revision=REVISIONS[LENGTH_TOKENIZER])
+    shield = load_dataset(PROMPTSHIELD, revision=REVISIONS[PROMPTSHIELD])
+    gandalf = load_dataset(GANDALF, revision=REVISIONS[GANDALF])
     rng = random.Random(SEED)
 
     calibration = [r for r in _rows(shield["validation"], "promptshield/validation", tokenizer, MAX_TOKENS)

@@ -7,13 +7,16 @@ import urllib.request
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+from .config import REVISIONS
+
 POSITIVE_LABELS = {"INJECTION", "LABEL_1", "1", "UNSAFE", "MALICIOUS", "JAILBREAK"}
 
 
 class Classifier:
     def __init__(self, model_id: str, device: str = "mps"):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_id).to(device).eval()
+        revision = REVISIONS[model_id]
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_id, revision=revision).to(device).eval()
         self.device = device
         labels = self.model.config.id2label
         self.positive = next(i for i, name in labels.items() if str(name).upper() in POSITIVE_LABELS)
@@ -75,7 +78,11 @@ class OllamaGuard:
 
 
 def yes_probability(top: list[dict]) -> float:
-    """P(YES) / (P(YES) + P(NO)) over first-token alternatives; 0.5 when neither appears."""
+    """P(YES) / (P(YES) + P(NO)) over the returned first-token alternatives.
+
+    A label missing from the alternatives counts as probability 0, so the score is 1 or 0 when only one label
+    appears, and 0.5 when neither does.
+    """
     yes = sum(math.exp(t["logprob"]) for t in top if t["token"].strip().upper() == "YES")
     no = sum(math.exp(t["logprob"]) for t in top if t["token"].strip().upper() == "NO")
     return yes / (yes + no) if yes + no > 0 else 0.5
