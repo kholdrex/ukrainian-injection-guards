@@ -4,9 +4,9 @@ main-0677,uk,google/gemini-2.5-flash-lite,1,executed
 main-1076,uk,google/gemini-2.5-flash-lite,0,executed
 main-0527,uk,google/gemini-2.5-flash-lite,1,executed
 main-0558,uk_alt,mistralai/mistral-small-3.2-24b-instruct,1,executed
-main-1371,uk,google/gemini-2.5-flash-lite,0,translation
+main-1371,uk,google/gemini-2.5-flash-lite,0,executed
 main-0591,uk_alt,mistralai/mistral-small-3.2-24b-instruct,1,executed
-main-1016,uk_alt,mistralai/mistral-small-3.2-24b-instruct,0,translation
+main-1016,uk_alt,mistralai/mistral-small-3.2-24b-instruct,0,partial
 main-0538,uk,google/gemini-2.5-flash-lite,1,executed
 main-1307,uk,google/gemini-2.5-flash-lite,0,executed
 main-0768,uk,google/gemini-2.5-flash-lite,1,executed
@@ -19,7 +19,7 @@ main-0803,uk,google/gemini-2.5-flash-lite,1,executed
 main-0588,uk,google/gemini-2.5-flash-lite,1,executed
 main-1403,uk,google/gemini-2.5-flash-lite,0,executed
 main-1137,uk,google/gemini-2.5-flash-lite,0,partial
-main-0538,uk_alt,mistralai/mistral-small-3.2-24b-instruct,1,translation
+main-0538,uk_alt,mistralai/mistral-small-3.2-24b-instruct,1,partial
 main-1439,uk_alt,mistralai/mistral-small-3.2-24b-instruct,0,translation
 main-0637,uk_alt,mistralai/mistral-small-3.2-24b-instruct,1,executed
 main-0777,uk,google/gemini-2.5-flash-lite,1,executed
@@ -27,7 +27,7 @@ main-0540,uk,google/gemini-2.5-flash-lite,1,executed
 main-1077,uk_alt,mistralai/mistral-small-3.2-24b-instruct,0,translation
 main-0529,uk,google/gemini-2.5-flash-lite,1,executed
 main-0775,uk,google/gemini-2.5-flash-lite,1,executed
-main-0524,uk_alt,mistralai/mistral-small-3.2-24b-instruct,1,translation
+main-0524,uk_alt,mistralai/mistral-small-3.2-24b-instruct,1,partial
 main-1419,uk,google/gemini-2.5-flash-lite,0,executed
 main-0653,uk,google/gemini-2.5-flash-lite,1,executed
 main-0898,uk,google/gemini-2.5-flash-lite,0,executed
@@ -36,6 +36,6 @@ main-0664,uk,google/gemini-2.5-flash-lite,1,executed
 main-1378,uk_alt,mistralai/mistral-small-3.2-24b-instruct,0,partial
 main-0629,uk,google/gemini-2.5-flash-lite,1,executed
 main-1447,uk,google/gemini-2.5-flash-lite,0,executed
-main-0924,uk,google/gemini-2.5-flash-lite,0,translation
+main-0924,uk,google/gemini-2.5-flash-lite,0,executed
 main-1424,uk_alt,mistralai/mistral-small-3.2-24b-instruct,0,executed
 main-0716,uk,google/gemini-2.5-flash-lite,1,executed

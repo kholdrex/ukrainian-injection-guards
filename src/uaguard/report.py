@@ -17,16 +17,20 @@ from .sampling import read_jsonl
 DETECTORS = [*CLASSIFIERS, *LLM_GUARDS]
 LABELS = {"protectai": "ProtectAI DeBERTa-v3", "mdeberta": "mDeBERTa-v3 (Proventra)",
           "testsavant": "TestSavant defender", "qwen7b": "Qwen2.5-7B guard", "gemma4b": "Gemma3-4B guard"}
+SHORT = {"protectai": "ProtectAI", "mdeberta": "mDeBERTa", "testsavant": "TestSavant", "qwen7b": "Qwen2.5-7B",
+         "gemma4b": "Gemma3-4B"}
 MAIN_CONDITIONS = ("en", "uk", "uk_alt", "pivot")
 
 
 def _load():
-    from .cli import text_sha
+    from .cli import read_scores, text_sha
+    from .detectors import configuration
 
     current = {row["input_id"]: text_sha(row["text"]) for row in read_jsonl(DATA / "inputs.jsonl")}
     scores = defaultdict(dict)
-    for row in read_jsonl(RESULTS / "scores.jsonl"):
-        if current.get(row["input_id"]) == row["text_sha"]:
+    for row in read_scores():
+        if current.get(row["input_id"]) == row["text_sha"] and \
+                row["config_sha"] == text_sha(configuration(row["detector"])):
             scores[row["detector"]][row["input_id"]] = row
     return {name: rows for name, rows in scores.items() if len(rows) == len(current)}
 
@@ -150,33 +154,29 @@ def _llm_pilot():
 
 
 def _figure(scores, ids, labels, thresholds):
+    from matplotlib.lines import Line2D
+
     names = [n for n in DETECTORS if n in scores]
-    fig, axes = plt.subplots(2, 3, figsize=(6.4, 3.9), sharey=True)
-    axes = axes.ravel()
+    fig, axes = plt.subplots(1, len(names), figsize=(7.6, 2.3), sharey=True)
     y = np.array([labels[i] for i in ids])
     styles = {"en": ("-", "o", "English"), "uk": ("--", "^", "Ukrainian"), "pivot": (":", "s", "Back-translated")}
-    for ax, name in zip(axes, names):
+    for ax, name in zip(np.atleast_1d(axes), names):
         for condition, (style, marker, label) in styles.items():
             x = _vector(scores[name], condition, ids)
             fpr, tpr, _ = roc_curve(y, x)
-            ax.plot(fpr, tpr, style, color="black", linewidth=1.2, label=label)
+            ax.plot(fpr, tpr, style, color="black", linewidth=1.1)
             flagged = x > thresholds[name]
             ax.plot(max(flagged[y == 0].mean(), 0.005), flagged[y == 1].mean(), marker, color="black",
-                    markerfacecolor="white", markersize=6)
+                    markerfacecolor="white", markersize=5)
         ax.set_xscale("log")
         ax.set_xlim(0.005, 1)
-        ax.set_title(LABELS[name], fontsize=11)
-        ax.set_xlabel("FPR", fontsize=11)
-        ax.tick_params(labelsize=10)
-    for ax in axes[len(names):]:
-        ax.axis("off")
-    axes[0].set_ylabel("Recall", fontsize=11)
-    axes[3].set_ylabel("Recall", fontsize=11)
-    from matplotlib.lines import Line2D
+        ax.set_title(SHORT[name], fontsize=9)
+        ax.set_xlabel("FPR", fontsize=9)
+        ax.tick_params(labelsize=8)
+    np.atleast_1d(axes)[0].set_ylabel("Recall", fontsize=9)
     handles = [Line2D([], [], linestyle=style, marker=marker, color="black", markerfacecolor="white", label=label)
                for style, marker, label in styles.values()]
-    target = axes[len(names)] if len(names) < len(axes) else axes[0]
-    target.legend(handles=handles, fontsize=11, loc="center", frameon=False)
-    fig.tight_layout()
+    fig.legend(handles=handles, loc="upper center", ncol=3, fontsize=9, frameon=False, bbox_to_anchor=(0.5, 1.02))
+    fig.tight_layout(rect=(0, 0, 1, 0.9))
     fig.savefig(RESULTS / "roc.png", dpi=300)
     plt.close(fig)

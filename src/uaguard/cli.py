@@ -39,16 +39,23 @@ def text_sha(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
+def read_scores() -> list[dict]:
+    rows = read_jsonl(SCORES) if SCORES.exists() else []
+    if rows and not {"text_sha", "config_sha"} <= rows[0].keys():
+        raise SystemExit(f"{SCORES} was written by an older version without text and configuration hashes; "
+                         "move it aside and score again")
+    return rows
+
+
 def score(names: list[str]) -> None:
-    from .detectors import Classifier, OllamaGuard
+    from .detectors import Classifier, OllamaGuard, configuration
 
     inputs = read_jsonl(INPUTS)
-    done = set()
-    if SCORES.exists():
-        done = {(row["detector"], row["input_id"], row["text_sha"]) for row in read_jsonl(SCORES)}
+    done = {(row["detector"], row["input_id"], row["text_sha"], row["config_sha"]) for row in read_scores()}
     RESULTS.mkdir(exist_ok=True)
     for name in names:
-        todo = [row for row in inputs if (name, row["input_id"], text_sha(row["text"])) not in done]
+        config = text_sha(configuration(name))
+        todo = [row for row in inputs if (name, row["input_id"], text_sha(row["text"]), config) not in done]
         if not todo:
             continue
         detector = Classifier(CLASSIFIERS[name]) if name in CLASSIFIERS else OllamaGuard(LLM_GUARDS[name])
@@ -58,7 +65,8 @@ def score(names: list[str]) -> None:
             with SCORES.open("a") as handle:
                 for row, result in zip(batch, detector.score([r["text"] for r in batch])):
                     handle.write(json.dumps({"detector": name, "input_id": row["input_id"],
-                                             "text_sha": text_sha(row["text"]), **result}, ensure_ascii=False) + "\n")
+                                             "text_sha": text_sha(row["text"]), "config_sha": config, **result},
+                                            ensure_ascii=False) + "\n")
 
 
 def main() -> None:

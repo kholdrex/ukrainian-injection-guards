@@ -1,7 +1,7 @@
 """Translation of source texts and automatic checks of the result.
 
-Evaluation inputs are translated with sequence-to-sequence MT models, which cannot follow instructions inside the
-text. The LLM translator is kept to reproduce the pilot in which it often executed the prompt instead.
+Evaluation inputs are translated with sequence-to-sequence MT models trained only to translate. The LLM translator
+is kept to reproduce the pilot in which it often executed the prompt instead.
 """
 import hashlib
 import json

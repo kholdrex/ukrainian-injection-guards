@@ -86,3 +86,12 @@ def yes_probability(top: list[dict]) -> float:
     yes = sum(math.exp(t["logprob"]) for t in top if t["token"].strip().upper() == "YES")
     no = sum(math.exp(t["logprob"]) for t in top if t["token"].strip().upper() == "NO")
     return yes / (yes + no) if yes + no > 0 else 0.5
+
+
+def configuration(name: str) -> str:
+    """Everything that determines a detector's scores besides the input text."""
+    from .config import CLASSIFIERS, LLM_GUARDS
+
+    if name in CLASSIFIERS:
+        return f"{CLASSIFIERS[name]}@{REVISIONS[CLASSIFIERS[name]]}|max_length=512"
+    return f"{LLM_GUARDS[name]}|{GUARD_SYSTEM}|temperature=0,num_predict=1,num_ctx=2048,top_logprobs=10"
