@@ -1,0 +1,33 @@
+[project]
+name = "uaguard"
+version = "1.0.0"
+description = "Transfer of prompt-injection detectors from English to Ukrainian inputs"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Oleksandr Kholodniak", email = "o.o.kholodniak@khai.edu" }]
+requires-python = ">=3.11"
+dependencies = [
+  "datasets>=3.0",
+  "matplotlib>=3.8",
+  "numpy>=1.26",
+  "scikit-learn>=1.4",
+  "scipy>=1.12",
+  "torch>=2.3",
+  "transformers>=4.44",
+  "sentencepiece>=0.2",
+  "protobuf>=4.25",
+  "tiktoken>=0.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+uaguard = "uaguard.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
