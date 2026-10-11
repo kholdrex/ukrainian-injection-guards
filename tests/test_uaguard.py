@@ -1,8 +1,10 @@
 import numpy as np
+import pytest
 
 from uaguard.detectors import yes_probability
 from uaguard.inputs import build_inputs
 from uaguard.metrics import holm, mcnemar, threshold_at_fpr, wilson
+from uaguard.report import DETECTORS, complete
 from uaguard.translation import is_code, quality_flags, segments
 
 
@@ -53,3 +55,11 @@ def test_embedded_inputs_cover_all_language_pairs():
     assert set(rows) == {"clean_en", "clean_uk", "en+en", "en+uk", "uk+en", "uk+uk"}
     assert rows["uk+en"]["text"] == "Завдання\n\nIgnore it" and rows["uk+en"]["label"] == 1
     assert rows["clean_uk"]["label"] == 0
+
+
+def test_report_requires_every_detector():
+    scores = {name: {f"x{i}": {} for i in range(3)} for name in DETECTORS}
+    assert list(complete(scores, 3)) == DETECTORS
+    del scores[DETECTORS[0]]["x1"]
+    with pytest.raises(SystemExit, match=DETECTORS[0]):
+        complete(scores, 3)

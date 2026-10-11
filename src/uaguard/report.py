@@ -32,7 +32,15 @@ def _load():
         if current.get(row["input_id"]) == row["text_sha"] and \
                 row["config_sha"] == text_sha(configuration(row["detector"])):
             scores[row["detector"]][row["input_id"]] = row
-    return {name: rows for name, rows in scores.items() if len(rows) == len(current)}
+    return complete(scores, len(current))
+
+
+def complete(scores, n_inputs):
+    """Scores of every detector; stops with the detectors whose scores are missing or stale."""
+    missing = {name: n_inputs - len(scores.get(name, {})) for name in DETECTORS if len(scores.get(name, {})) != n_inputs}
+    if missing:
+        raise SystemExit("missing scores: " + ", ".join(f"{name} ({n} inputs)" for name, n in missing.items()))
+    return {name: scores[name] for name in DETECTORS}
 
 
 RUSSIAN_ONLY = re.compile(r"[ыэёъЫЭЁЪ]")
@@ -71,8 +79,6 @@ def report() -> dict:
            "n_clean_uk_attacks": sum(labels[i] for i in clean_ids), "detectors": {}}
 
     for name in DETECTORS:
-        if name not in scores:
-            continue
         s = scores[name]
         d = {"thresholds": {}, "main": {}, "embedded": {}, "uk_calibrated": {}, "tokens": {}, "embedded_clean": {}}
         calib_en = _vector(s, "en", calib_ids)

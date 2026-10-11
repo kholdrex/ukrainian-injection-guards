@@ -46,16 +46,20 @@ Python 3.11+ and [uv](https://docs.astral.sh/uv/). `requirements.lock.txt` lists
 
 ```bash
 uv venv && uv pip install -r requirements.lock.txt && uv pip install -e ".[dev]" --no-deps
-uv run pytest
-uv run uaguard report        # results/summary.json and results/roc.png from the stored scores
+uv run --no-sync pytest
+uv run --no-sync uaguard report   # results/summary.json and results/roc.png from the stored scores
 ```
 
-New measurements: `uv run uaguard sample`, `uv run uaguard translate`,
-`uv run uaguard score protectai mdeberta testsavant qwen7b gemma4b` (the guards need Ollama) and
-`uv run uaguard latency` on an otherwise idle machine. `uv run uaguard translate-llm` reproduces the LLM translation
-attempt (needs `OPENROUTER_API_KEY`). Model and dataset revisions are pinned in `src/uaguard/config.py`. Scoring resumes from `results/`.
+New measurements (macOS with Apple MPS: the classifiers and the latency measurement use the `mps` device):
+`uv run --no-sync uaguard sample`, `uv run --no-sync uaguard translate`,
+`uv run --no-sync uaguard score protectai mdeberta testsavant qwen7b gemma4b` and `uv run --no-sync uaguard latency` on
+an otherwise idle machine. The guards need Ollama with the model digests listed above (`ollama list`); the scores
+identify a guard by its tag, so resumed scoring with other weights under the same tag would mix them.
+`uv run --no-sync uaguard translate-llm` reproduces the LLM translation attempt (needs `OPENROUTER_API_KEY`). Model and
+dataset revisions are pinned in `src/uaguard/config.py`. Scoring resumes from `results/`; `report` stops if a detector
+has missing or stale scores.
 
 ## License
 
-Code: MIT. PromptShield is distributed under Apache-2.0 and the Gandalf collection under MIT; the files in `data/`
-contain texts from them and their machine translations.
+Code: MIT. The files in `data/` contain texts from PromptShield (Apache-2.0) and the Gandalf collection (MIT) and their
+machine translations; see `THIRD_PARTY_NOTICES.md` and `LICENSES/`.
