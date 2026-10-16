@@ -1,10 +1,14 @@
+import csv
+
 import numpy as np
 import pytest
 
+from uaguard.config import DATA
 from uaguard.detectors import yes_probability
 from uaguard.inputs import build_inputs
 from uaguard.metrics import holm, mcnemar, threshold_at_fpr, wilson
-from uaguard.report import DETECTORS, complete
+from uaguard.report import DETECTORS, audit_sample, complete
+from uaguard.sampling import read_jsonl
 from uaguard.translation import is_code, quality_flags, segments
 
 
@@ -63,3 +67,10 @@ def test_report_requires_every_detector():
     del scores[DETECTORS[0]]["x1"]
     with pytest.raises(SystemExit, match=DETECTORS[0]):
         complete(scores, 3)
+
+
+def test_audit_sample_matches_classified_file():
+    rows = read_jsonl(DATA / "llm_translation_pilot.jsonl")
+    with (DATA / "llm_translation_audit.csv").open() as handle:
+        classified = [(row["item_id"], row["field"]) for row in csv.DictReader(handle)]
+    assert audit_sample(rows) == classified

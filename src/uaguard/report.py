@@ -1,5 +1,6 @@
 """Tables and figures from data/inputs.jsonl and results/scores.jsonl."""
 import json
+import random
 import re
 from collections import defaultdict
 
@@ -128,6 +129,10 @@ def report() -> dict:
         d["uk_calibrated"] = {"threshold": thr_uk, "recall": float((x[y == 1] > thr_uk).mean()),
                               "fpr": float((x[y == 0] > thr_uk).mean()),
                               "calibration_fpr_uk_at_en_threshold": float((calib_uk > thr).mean())}
+        benign = [i for i in main_ids if not labels[i] and not s[f"{i}/uk"]["truncated"]]
+        d["untruncated_benign"] = {"n": len(benign)}
+        for condition in ("en", "uk"):
+            d["untruncated_benign"][f"fpr_{condition}"] = float((_vector(s, condition, benign) > thr).mean())
         for condition in ("en", "uk"):
             rows = [s[f"{i}/{condition}"] for i in main_ids]
             d["tokens"][condition] = {"mean": float(np.mean([r["tokens"] for r in rows])),
@@ -143,6 +148,13 @@ def report() -> dict:
     (RESULTS / "summary.json").write_text(json.dumps(out, indent=1))
     _figure(scores, main_ids, labels, {n: out['detectors'][n]['thresholds']['0.05'] for n in out['detectors']})
     return out
+
+
+def audit_sample(rows, n=40, seed=7):
+    """Rejected LLM translations drawn for the classification by hand in data/llm_translation_audit.csv."""
+    rejected = [(row["id"], field) for row in rows if row["group"] == "main" for field in ("uk", "uk_alt")
+                if f"{field}_meta" in row and row[f"{field}_meta"]["flags"]]
+    return random.Random(seed).sample(rejected, n)
 
 
 def _llm_pilot():

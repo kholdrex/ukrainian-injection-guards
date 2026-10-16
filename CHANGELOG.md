@@ -28,3 +28,10 @@
    - `scores.jsonl` rows carry a hash of the scored text, and `report` uses only scores whose hash matches the
      current input; MT cache files are keyed by model revision and beam size; model and dataset revisions are
      pinned; `translate` always starts from `data/items.jsonl`.
+
+3. Reporting additions (2026-10-16); no detector was rerun and no earlier value changed.
+   - `report` writes the FPR of the benign main prompts whose Ukrainian version was not truncated at 512 tokens, in
+     English and in Ukrainian at the English 5% threshold (`untruncated_benign` in `summary.json`).
+   - `audit_sample` in `report.py` draws the 40 rejected LLM translations of `data/llm_translation_audit.csv`
+     (seed 7); a test checks that it reproduces the file.
+   - Unused language-code arguments of the MT wrapper, left from the NLLB attempt, removed.

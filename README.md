@@ -33,11 +33,21 @@ translators is kept in `data/llm_translation_pilot.jsonl`: they often executed t
 ```
 src/uaguard/    sampling, translation, evaluation inputs, detectors, metrics, latency, report
 data/           items.jsonl (sampled English texts), items_translated.jsonl, inputs.jsonl (every scored text),
-                llm_translation_pilot.jsonl
+                llm_translation_pilot.jsonl, llm_translation_audit.csv (40 rejected LLM translations classified by hand)
 results/        scores.jsonl (score, tokens and time per detector and input), summary.json, latency.json, roc.png
 tests/          unit tests
-PROTOCOL.md     plan written before any detector was run; protocol_freeze.sha256 holds the hashes at that time
+PROTOCOL.md     plan written before any detector was run
 CHANGELOG.md    changes after the plan
+LICENSES/       licences of the third-party data (see THIRD_PARTY_NOTICES.md)
+```
+
+`protocol_freeze.sha256` holds the hashes of the protocol, the sample and the code at the freeze commit `a88b82e`
+(2026-10-03 01:31 UTC), before any detector was run. Later changes to these files are listed in `CHANGELOG.md`, so the
+check is run on that commit:
+
+```bash
+mkdir /tmp/uaguard-freeze && git archive a88b82e | tar -x -C /tmp/uaguard-freeze
+cd /tmp/uaguard-freeze && grep -v '^[0-9-]*T' protocol_freeze.sha256 | shasum -a 256 -c
 ```
 
 ## Usage

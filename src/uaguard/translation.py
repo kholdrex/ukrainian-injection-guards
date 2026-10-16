@@ -61,14 +61,11 @@ def segments(text: str) -> list[list[str]]:
 
 
 class MachineTranslator:
-    def __init__(self, model_id: str, source: str | None = None, target: str | None = None, prefix: str = "",
-                 device: str = "cpu"):
+    def __init__(self, model_id: str, prefix: str = "", device: str = "cpu"):
         revision = REVISIONS[model_id]
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision,
-                                                       **({"src_lang": source} if source else {}))
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model_id, revision=revision).to(device).eval()
         self.device = device
-        self.forced = {"forced_bos_token_id": self.tokenizer.convert_tokens_to_ids(target)} if target else {}
         self.model_id = model_id
         self.prefix = prefix
         torch.set_num_threads(4)
@@ -80,8 +77,7 @@ class MachineTranslator:
             batch = [self.prefix + s for s in sentences[start:start + batch_size]]
             encoded = self.tokenizer(batch, return_tensors="pt", padding=True, truncation=True, max_length=400)
             limit = int(2 * encoded["input_ids"].shape[1]) + 10
-            generated = self.model.generate(**encoded.to(self.device), max_new_tokens=limit, num_beams=BEAMS,
-                                            **self.forced)
+            generated = self.model.generate(**encoded.to(self.device), max_new_tokens=limit, num_beams=BEAMS)
             out += self.tokenizer.batch_decode(generated, skip_special_tokens=True)
         return out
 

@@ -16,9 +16,9 @@ PROMPTSHIELD = "hendzh/PromptShield"
 GANDALF = "Lakera/gandalf_ignore_instructions"
 LENGTH_TOKENIZER = "protectai/deberta-v3-base-prompt-injection-v2"
 
-MT_PRIMARY = ("Helsinki-NLP/opus-mt-en-uk", None, None, "")
-MT_SECOND = ("Helsinki-NLP/opus-mt-tc-big-en-zle", None, None, ">>ukr<< ")
-MT_BACK = ("Helsinki-NLP/opus-mt-uk-en", None, None, "")
+MT_PRIMARY = ("Helsinki-NLP/opus-mt-en-uk", "")
+MT_SECOND = ("Helsinki-NLP/opus-mt-tc-big-en-zle", ">>ukr<< ")
+MT_BACK = ("Helsinki-NLP/opus-mt-uk-en", "")
 LLM_TRANSLATORS = ("google/gemini-2.5-flash-lite", "mistralai/mistral-small-3.2-24b-instruct")
 
 CLASSIFIERS = {
