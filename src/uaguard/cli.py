@@ -1,9 +1,9 @@
 import argparse
-import hashlib
 import json
 
 from .config import CLASSIFIERS, DATA, LLM_GUARDS, LLM_TRANSLATORS, MT_BACK, MT_PRIMARY, MT_SECOND, RESULTS
 from .inputs import build_inputs
+from .manifest import text_sha, write_manifest
 from .sampling import read_jsonl, write_samples
 from .translation import MachineTranslator, translate_all_llm, translate_mt, write_jsonl
 
@@ -24,6 +24,7 @@ def translate() -> None:
     translate_mt(main, "uk", "pivot", MachineTranslator(*MT_BACK), "en")
     write_jsonl(items, TRANSLATED)
     write_jsonl(build_inputs(items), INPUTS)
+    manifest()
 
 
 def translate_llm() -> None:
@@ -33,10 +34,13 @@ def translate_llm() -> None:
     translate_all_llm(main, "en", "uk_alt", LLM_TRANSLATORS[1], "en", "uk")
     translate_all_llm(main, "uk", "pivot", LLM_TRANSLATORS[1], "uk", "en")
     write_jsonl(items, LLM_PILOT)
+    if TRANSLATED.exists():
+        manifest()
 
 
-def text_sha(text: str) -> str:
-    return hashlib.sha256(text.encode()).hexdigest()[:16]
+def manifest() -> None:
+    """data/manifest.json from the local texts; the texts themselves are not part of the repository."""
+    write_manifest(read_jsonl(TRANSLATED), read_jsonl(INPUTS), read_jsonl(LLM_PILOT) if LLM_PILOT.exists() else None)
 
 
 def read_scores() -> list[dict]:
@@ -75,6 +79,7 @@ def main() -> None:
     sub.add_parser("sample")
     sub.add_parser("translate")
     sub.add_parser("translate-llm")
+    sub.add_parser("manifest")
     run = sub.add_parser("score")
     run.add_argument("detectors", nargs="+", choices=[*CLASSIFIERS, *LLM_GUARDS])
     sub.add_parser("latency")
@@ -86,6 +91,8 @@ def main() -> None:
         translate()
     elif args.command == "translate-llm":
         translate_llm()
+    elif args.command == "manifest":
+        manifest()
     elif args.command == "score":
         score(args.detectors)
     elif args.command == "latency":

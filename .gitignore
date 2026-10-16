@@ -4,3 +4,7 @@ __pycache__/
 .cache/
 .DS_Store
 .pytest_cache/
+data/items.jsonl
+data/items_translated.jsonl
+data/inputs.jsonl
+data/llm_translation_pilot.jsonl

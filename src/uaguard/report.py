@@ -1,7 +1,6 @@
-"""Tables and figures from data/inputs.jsonl and results/scores.jsonl."""
+"""Tables and figures from data/manifest.json and results/scores.jsonl."""
 import json
 import random
-import re
 from collections import defaultdict
 
 import matplotlib
@@ -11,9 +10,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve
 
-from .config import BOOTSTRAP, CLASSIFIERS, DATA, LLM_GUARDS, RESULTS, SEED, TARGET_FPR
+from .config import BOOTSTRAP, CLASSIFIERS, LLM_GUARDS, RESULTS, SEED, TARGET_FPR
+from .manifest import read_manifest, text_sha
 from .metrics import auroc, holm, mcnemar, paired_bootstrap, threshold_at_fpr, wilson
-from .sampling import read_jsonl
 
 DETECTORS = [*CLASSIFIERS, *LLM_GUARDS]
 LABELS = {"protectai": "ProtectAI DeBERTa-v3", "mdeberta": "mDeBERTa-v3 (Proventra)",
@@ -23,11 +22,10 @@ SHORT = {"protectai": "ProtectAI", "mdeberta": "mDeBERTa", "testsavant": "TestSa
 MAIN_CONDITIONS = ("en", "uk", "uk_alt", "pivot")
 
 
-def _load():
-    from .cli import read_scores, text_sha
+def _load(current: dict):
+    from .cli import read_scores
     from .detectors import configuration
 
-    current = {row["input_id"]: text_sha(row["text"]) for row in read_jsonl(DATA / "inputs.jsonl")}
     scores = defaultdict(dict)
     for row in read_scores():
         if current.get(row["input_id"]) == row["text_sha"] and \
@@ -44,14 +42,9 @@ def complete(scores, n_inputs):
     return {name: scores[name] for name in DETECTORS}
 
 
-RUSSIAN_ONLY = re.compile(r"[ыэёъЫЭЁЪ]")
-UKRAINIAN_ONLY = re.compile(r"[іїєґІЇЄҐ]")
-CYRILLIC = re.compile(r"[а-яА-Я]")
-
-
-def clean_ukrainian(text: str) -> bool:
+def clean_ukrainian(item: dict, field: str) -> bool:
     """No letters that exist only in Russian; used for the sensitivity analysis."""
-    return not RUSSIAN_ONLY.search(text)
+    return not item["letters"][field]["russian_only"]
 
 
 def _excluded(items):
@@ -64,15 +57,16 @@ def _vector(scores, condition, ids):
 
 
 def report() -> dict:
-    scores = _load()
-    items = read_jsonl(DATA / "items_translated.jsonl")
+    manifest = read_manifest()
+    scores = _load(manifest["inputs"])
+    items = manifest["items"]
     excluded = _excluded(items)
     main_ids = [i["id"] for i in items if i["group"] == "main" and i["id"] not in excluded]
     all_main = [i["id"] for i in items if i["group"] == "main"]
     calib_ids = [i["id"] for i in items if i["group"] == "calibration"]
     primary = set(main_ids)
     clean_ids = [i["id"] for i in items
-                 if i["id"] in primary and clean_ukrainian(i["uk"]) and clean_ukrainian(i["uk_alt"])]
+                 if i["id"] in primary and clean_ukrainian(i, "uk") and clean_ukrainian(i, "uk_alt")]
     by_id = {i["id"]: i for i in items}
     embed_ids = [i["id"] for i in items if i["group"] == "carrier"]
     labels = {i["id"]: i["label"] for i in items}
@@ -117,8 +111,9 @@ def report() -> dict:
         thr = d["thresholds"]["0.05"]
         payloads = [i for i in items if i["group"] == "payload"]
         clean_pairs = [c for c, p in zip(embed_ids, payloads)
-                       if clean_ukrainian(by_id[c]["uk"]) and clean_ukrainian(p["uk"]) and UKRAINIAN_ONLY.search(p["uk"])
-                       and not CYRILLIC.search(p["en"]) and not CYRILLIC.search(by_id[c]["en"])]
+                       if clean_ukrainian(by_id[c], "uk") and clean_ukrainian(p, "uk")
+                       and p["letters"]["uk"]["ukrainian_only"]
+                       and not p["letters"]["en"]["cyrillic"] and not by_id[c]["letters"]["en"]["cyrillic"]]
         for condition in ("clean_en", "clean_uk", "en+en", "uk+en", "en+uk", "uk+uk"):
             d["embedded"][condition] = float((_vector(s, condition, embed_ids) > thr).mean())
             d["embedded_clean"][condition] = float((_vector(s, condition, clean_pairs) > thr).mean())
@@ -144,7 +139,7 @@ def report() -> dict:
         raw = [out["detectors"][n]["main"]["primary"]["uk"]["0.05"][field] for n in names]
         for n, p in zip(names, holm(raw)):
             out["detectors"][n]["main"]["primary"]["uk"]["0.05"][field + "_holm"] = p
-    out["llm_translation_pilot"] = _llm_pilot()
+    out["llm_translation_pilot"] = _llm_pilot(manifest["llm_pilot"])
     (RESULTS / "summary.json").write_text(json.dumps(out, indent=1))
     _figure(scores, main_ids, labels, {n: out['detectors'][n]['thresholds']['0.05'] for n in out['detectors']})
     return out
@@ -157,11 +152,9 @@ def audit_sample(rows, n=40, seed=7):
     return random.Random(seed).sample(rejected, n)
 
 
-def _llm_pilot():
-    path = DATA / "llm_translation_pilot.jsonl"
-    if not path.exists():
+def _llm_pilot(rows):
+    if not rows:
         return {}
-    rows = read_jsonl(path)
     out = {}
     for field in ("uk", "uk_alt"):
         for label in (0, 1):

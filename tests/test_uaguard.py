@@ -7,8 +7,8 @@ from uaguard.config import DATA
 from uaguard.detectors import yes_probability
 from uaguard.inputs import build_inputs
 from uaguard.metrics import holm, mcnemar, threshold_at_fpr, wilson
+from uaguard.manifest import read_manifest
 from uaguard.report import DETECTORS, audit_sample, complete
-from uaguard.sampling import read_jsonl
 from uaguard.translation import is_code, quality_flags, segments
 
 
@@ -70,7 +70,7 @@ def test_report_requires_every_detector():
 
 
 def test_audit_sample_matches_classified_file():
-    rows = read_jsonl(DATA / "llm_translation_pilot.jsonl")
+    rows = read_manifest()["llm_pilot"]
     with (DATA / "llm_translation_audit.csv").open() as handle:
         classified = [(row["item_id"], row["field"]) for row in csv.DictReader(handle)]
     assert audit_sample(rows) == classified

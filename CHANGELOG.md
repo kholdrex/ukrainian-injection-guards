@@ -35,3 +35,13 @@
    - `audit_sample` in `report.py` draws the 40 rejected LLM translations of `data/llm_translation_audit.csv`
      (seed 7); a test checks that it reproduces the file.
    - Unused language-code arguments of the MT wrapper, left from the NLLB attempt, removed.
+
+4. Texts removed from the repository (2026-10-16); no detector was rerun and no value changed.
+   PromptShield's evaluation splits include LMSYS-Chat-1M conversations, whose licence does not allow
+   redistribution, and the source of each prompt is not recorded, so no prompt text or translation is published.
+   `data/items.jsonl`, `data/items_translated.jsonl`, `data/inputs.jsonl` and `data/llm_translation_pilot.jsonl` are
+   rebuilt locally (`uaguard sample`, `uaguard translate`, `uaguard translate-llm`); `uaguard manifest` writes
+   `data/manifest.json` from them, and `report` reads only the manifest and the scores. `results/summary.json` and
+   `results/roc.png` are byte-identical with and without the texts, `uaguard sample` rebuilds `data/items.jsonl` with
+   the hash in `protocol_freeze.sha256`, and a fresh `uaguard translate` without the MT cache reproduced every stored
+   translation.
