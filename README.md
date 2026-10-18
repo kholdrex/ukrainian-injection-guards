@@ -42,7 +42,7 @@ translators is recorded in the manifest: they often executed the prompt instead 
 src/uaguard/    sampling, translation, evaluation inputs, detectors, metrics, latency, report
 data/           manifest.json (text-free record of items, inputs and LLM translations),
                 llm_translation_audit.csv (40 rejected LLM translations classified by hand)
-results/        scores.jsonl (score, tokens and time per detector and input), summary.json, latency.json, roc.png
+results/        scores.jsonl (score, tokens and time per detector and input), summary.json, supplement.json, latency.json, roc.png
 tests/          unit tests
 PROTOCOL.md     plan written before any detector was run
 CHANGELOG.md    changes after the plan
@@ -66,7 +66,7 @@ Python 3.11+ and [uv](https://docs.astral.sh/uv/). `requirements.lock.txt` lists
 ```bash
 uv venv && uv pip install -r requirements.lock.txt && uv pip install -e ".[dev]" --no-deps
 uv run --no-sync pytest
-uv run --no-sync uaguard report   # results/summary.json and results/roc.png from the manifest and the stored scores
+uv run --no-sync uaguard report   # results/summary.json, supplement.json and roc.png from the manifest and the stored scores
 ```
 
 `report` needs no texts. To rebuild them, `uv run --no-sync uaguard sample` downloads the pinned dataset revisions and

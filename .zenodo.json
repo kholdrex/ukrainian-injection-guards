@@ -6,5 +6,5 @@
   "description": "Code, detector scores, a text-free data manifest and analysis of how prompt-injection classifiers and local LLM guards with thresholds set on English traffic behave on Ukrainian and mixed Ukrainian-English inputs (PromptShield, Gandalf payloads).",
   "license": "MIT",
   "keywords": ["prompt injection", "LLM security", "Ukrainian", "machine translation", "false positives"],
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

@@ -1,6 +1,6 @@
 [project]
 name = "uaguard"
-version = "1.0.0"
+version = "1.1.0"
 description = "Transfer of prompt-injection detectors from English to Ukrainian inputs"
 readme = "README.md"
 license = { text = "MIT" }

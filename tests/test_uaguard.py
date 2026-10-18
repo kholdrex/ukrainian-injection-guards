@@ -6,9 +6,10 @@ import pytest
 from uaguard.config import DATA
 from uaguard.detectors import yes_probability
 from uaguard.inputs import build_inputs
-from uaguard.metrics import holm, mcnemar, threshold_at_fpr, wilson
 from uaguard.manifest import read_manifest
+from uaguard.metrics import holm, mcnemar, threshold_at_fpr, wilson
 from uaguard.report import DETECTORS, audit_sample, complete
+from uaguard.supplement import stratified_auroc
 from uaguard.translation import is_code, quality_flags, segments
 
 
@@ -74,3 +75,12 @@ def test_audit_sample_matches_classified_file():
     with (DATA / "llm_translation_audit.csv").open() as handle:
         classified = [(row["item_id"], row["field"]) for row in csv.DictReader(handle)]
     assert audit_sample(rows) == classified
+
+
+def test_stratified_auroc_pairs_columns():
+    y = np.array([0] * 30 + [1] * 30)
+    x = np.concatenate([np.linspace(0, 0.6, 30), np.linspace(0.4, 1, 30)])
+    out = stratified_auroc(y, {"en": x, "uk": x}, resamples=50, seed=1)
+    assert out["uk"]["d_auroc"] == 0 and out["uk"]["d_auroc_ci"] == [0.0, 0.0]
+    low, high = out["en"]["ci"]
+    assert low <= out["en"]["auroc"] <= high

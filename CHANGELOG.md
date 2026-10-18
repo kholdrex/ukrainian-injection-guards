@@ -45,3 +45,15 @@
    `results/roc.png` are byte-identical with and without the texts, `uaguard sample` rebuilds `data/items.jsonl` with
    the hash in `protocol_freeze.sha256`, and a fresh `uaguard translate` without the MT cache reproduced every stored
    translation.
+
+5. Exploratory analyses added after the first results were reviewed (2026-10-18); no detector was rerun and
+   `summary.json` and `roc.png` are unchanged. `report` also writes `results/supplement.json` (`supplement.py`):
+   - AUROC of every input version with 95% intervals and the paired differences from English, from a bootstrap that
+     resamples injections and benign prompts separately (2,000 resamples, seed 2026);
+   - recall at 5% FPR on the benign test prompts of the same input version – the point of each empirical ROC curve,
+     with the threshold chosen on those 569 prompts (attained FPR 28/569 = 4.9%); it is not an independently
+     validated operating point;
+   - recall in English and Ukrainian of the injections whose Ukrainian version was not truncated;
+   - embedded attacks: Wilson intervals of every rate and exact McNemar tests of EN + EN against EN + UK and of
+     UK + EN against UK + UK;
+   - the number of guard scores equal to 0 or 0.5 per input version, and the number of distinct payloads.

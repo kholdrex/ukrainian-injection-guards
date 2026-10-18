@@ -6,8 +6,8 @@ authors:
     given-names: Oleksandr
     orcid: "https://orcid.org/0009-0000-1012-7361"
     affiliation: "National Aerospace University \"Kharkiv Aviation Institute\""
-version: 1.0.0
-date-released: 2026-10-17
+version: 1.1.0
+date-released: 2026-10-18
 license: MIT
 doi: 10.5281/zenodo.23444970
 repository-code: "https://github.com/kholdrex/ukrainian-injection-guards"

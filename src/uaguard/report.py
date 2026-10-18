@@ -142,6 +142,8 @@ def report() -> dict:
     out["llm_translation_pilot"] = _llm_pilot(manifest["llm_pilot"])
     (RESULTS / "summary.json").write_text(json.dumps(out, indent=1))
     _figure(scores, main_ids, labels, {n: out['detectors'][n]['thresholds']['0.05'] for n in out['detectors']})
+    from .supplement import supplement
+    supplement(scores, items, main_ids, embed_ids, _vector)
     return out
 
 
