@@ -3,6 +3,8 @@
 Code, detector scores and analysis for the paper *Transfer of English-calibrated prompt-injection
 detectors to Ukrainian inputs* (O. Kholodniak).
 
+Archived on Zenodo: [doi:10.5281/zenodo.23444970](https://doi.org/10.5281/zenodo.23444970).
+
 PromptShield prompts (400 injections, 600 benign, plus 449 benign calibration prompts) and Gandalf injection payloads
 embedded in benign carrier texts are translated into Ukrainian with sequence-to-sequence MT and scored by five
 detectors. Thresholds are set on English benign calibration prompts (1% and 5% FPR) and frozen; recall, FPR and AUROC
